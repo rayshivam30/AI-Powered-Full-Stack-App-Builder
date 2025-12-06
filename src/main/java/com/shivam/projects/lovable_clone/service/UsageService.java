@@ -1,5 +1,6 @@
 package com.shivam.projects.lovable_clone.service;
 
+import com.shivam.projects.lovable_clone.dto.subscription.PlanLimitsResponse;
 import com.shivam.projects.lovable_clone.dto.subscription.UsageTodayResponse;
 import org.jspecify.annotations.Nullable;
 
