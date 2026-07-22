@@ -22,7 +22,4 @@ public class CorsConfig {
             }
         };
     }
-}
-
-// BE: api.shivam.com -> Server -> add cors configuration
-// FE: www.shivam.com
+}
