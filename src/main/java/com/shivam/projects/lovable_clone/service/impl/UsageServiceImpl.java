@@ -60,6 +60,17 @@ public class UsageServiceImpl implements UsageService {
 
     }
 
+    @Override
+    public UsageTodayResponse getTodayUsage() {
+        Long userId = authUtil.getCurrentUserId();
+        int tokensUsed = usageLogRepository.findByUserIdAndDate(userId, LocalDate.now())
+                .map(UsageLog::getTokensUsed)
+                .orElse(0);
+        PlanResponse plan = subscriptionService.getCurrentSubscription().plan();
+        Integer tokensLimit = Boolean.TRUE.equals(plan.unlimitedAi()) ? null : plan.maxTokensPerDay();
+        return new UsageTodayResponse(tokensUsed, tokensLimit, 0, null);
+    }
+
     private UsageLog createNewDailyLog(Long userId, LocalDate date) {
         UsageLog newLog = UsageLog.builder()
                 .userId(userId)

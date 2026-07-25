@@ -23,7 +23,10 @@ import java.io.InputStream;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 @Slf4j
@@ -50,18 +53,22 @@ public class ProjectFileServiceImpl implements ProjectFileService {
 
     @Override
     public FileContentResponse getFileContent(Long projectId, String path) {
-        String objectName = projectId + "/" + path;
+        String cleanPath = path.startsWith("/") ? path.substring(1) : path;
+        String objectName = projectId + "/" + cleanPath;
         try (
                 InputStream is = minioClient.getObject(
                         GetObjectArgs.builder()
-                                .bucket(BUCKET_NAME)
+                                .bucket(projectBucket)
                                 .object(objectName)
                                 .build())) {
 
             String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
-            return new FileContentResponse(path, content);
+            if (!content.contains("\n") && content.contains("\\n")) {
+                content = content.replace("\\n", "\n").replace("\\r", "").replace("\\t", "\t");
+            }
+            return new FileContentResponse(cleanPath, content);
         } catch (Exception e) {
-            log.error("Failed to read file: {}/{}", projectId, path, e);
+            log.error("Failed to read file: {}/{}", projectId, cleanPath, e);
             throw new RuntimeException("Failed to read file content", e);
         }
     }
@@ -75,8 +82,12 @@ public class ProjectFileServiceImpl implements ProjectFileService {
         String cleanPath = path.startsWith("/") ? path.substring(1) : path;
         String objectKey = projectId + "/" + cleanPath;
 
+        if (content != null && !content.contains("\n") && content.contains("\\n")) {
+            content = content.replace("\\n", "\n").replace("\\r", "").replace("\\t", "\t");
+        }
+
         try {
-            byte[] contentBytes = content.getBytes(StandardCharsets.UTF_8);
+            byte[] contentBytes = content == null ? new byte[0] : content.getBytes(StandardCharsets.UTF_8);
             InputStream inputStream = new ByteArrayInputStream(contentBytes);
             // saving the file content
             minioClient.putObject(
@@ -104,6 +115,40 @@ public class ProjectFileServiceImpl implements ProjectFileService {
             throw new RuntimeException("File save failed", e);
         }
 
+    }
+
+    @Override
+    public byte[] downloadProjectZip(Long projectId) {
+        try (var output = new java.io.ByteArrayOutputStream(); var zip = new ZipOutputStream(output)) {
+            List<ProjectFile> files = projectFileRepository.findByProjectId(projectId).stream()
+                    .sorted(Comparator.comparing(ProjectFile::getPath))
+                    .toList();
+
+            for (ProjectFile file : files) {
+                String path = file.getPath().replace('\\', '/');
+                while (path.startsWith("/")) {
+                    path = path.substring(1);
+                }
+                if (path.isBlank() || path.contains("../")) {
+                    throw new IllegalStateException("Invalid project file path: " + path);
+                }
+
+                zip.putNextEntry(new ZipEntry(path));
+                try (InputStream input = minioClient.getObject(GetObjectArgs.builder()
+                        .bucket(projectBucket)
+                        .object(file.getMinioObjectKey())
+                        .build())) {
+                    input.transferTo(zip);
+                }
+                zip.closeEntry();
+            }
+
+            zip.finish();
+            return output.toByteArray();
+        } catch (Exception e) {
+            log.error("Failed to create download archive for project {}", projectId, e);
+            throw new RuntimeException("Failed to create project archive", e);
+        }
     }
 
     private String determineContentType(String path) {

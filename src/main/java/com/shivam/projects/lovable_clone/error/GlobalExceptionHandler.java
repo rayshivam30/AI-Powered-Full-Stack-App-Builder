@@ -71,4 +71,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(apiError.status()).body(apiError);
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ApiError> handleIllegalState(IllegalStateException ex) {
+        ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+        log.error(apiError.toString(), ex);
+        return ResponseEntity.status(apiError.status()).body(apiError);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiError> handleGenericException(Exception ex) {
+        ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred");
+        log.error(apiError.toString(), ex);
+        return ResponseEntity.status(apiError.status()).body(apiError);
+    }
 }

@@ -113,6 +113,9 @@ public class AiGenerationServiceImpl implements AiGenerationService {
     private void finalizeChats(String userMessage, ChatSession chatSession, String fullText, Long duration, Usage usage) {
         Long projectId = chatSession.getProject().getId();
 
+        Integer promptTokens = usage != null ? usage.getPromptTokens() : 0;
+        Integer completionTokens = usage != null ? usage.getCompletionTokens() : 0;
+
         if(usage != null) {
             int totalTokens = usage.getTotalTokens();
             usageService.recordTokenUsage(chatSession.getUser().getId(), totalTokens);
@@ -124,15 +127,15 @@ public class AiGenerationServiceImpl implements AiGenerationService {
                         .chatSession(chatSession)
                         .role(MessageRole.USER)
                         .content(userMessage)
-                        .tokensUsed(usage.getPromptTokens())
+                        .tokensUsed(promptTokens)
                         .build()
         );
 
         ChatMessage assistantChatMessage = ChatMessage.builder()
                 .role(MessageRole.ASSISTANT)
-                .content("Assistant Message here...")
+                .content(fullText != null && !fullText.isBlank() ? fullText : "Completed processing.")
                 .chatSession(chatSession)
-                .tokensUsed(usage.getCompletionTokens())
+                .tokensUsed(completionTokens)
                 .build();
 
         assistantChatMessage = chatMessageRepository.save(assistantChatMessage);
@@ -146,7 +149,7 @@ public class AiGenerationServiceImpl implements AiGenerationService {
                 .build());
 
         chatEventList.stream()
-                .filter(e -> e.getType() == ChatEventType.FILE_EDIT)
+                .filter(e -> e.getType() == ChatEventType.FILE_EDIT && e.getFilePath() != null)
                 .forEach(e -> projectFileService.saveFile(projectId, e.getFilePath(), e.getContent()));
 
         chatEventRepository.saveAll(chatEventList);

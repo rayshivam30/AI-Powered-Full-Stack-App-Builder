@@ -6,6 +6,7 @@ import com.shivam.projects.lovable_clone.dto.auth.SignupRequest;
 import com.shivam.projects.lovable_clone.dto.auth.UserProfileResponse;
 import com.shivam.projects.lovable_clone.service.AuthService;
 import com.shivam.projects.lovable_clone.service.UserService;
+import com.shivam.projects.lovable_clone.security.AuthUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +21,7 @@ public class AuthController {
 
     AuthService authService;
     UserService userService;
+    AuthUtil authUtil;
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> signup(@RequestBody SignupRequest request) {
@@ -33,8 +35,7 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<UserProfileResponse> getProfile() {
-        Long userId = 1L;
-        return ResponseEntity.ok(userService.getProfile(userId));
+        return ResponseEntity.ok(userService.getProfile(authUtil.getCurrentUserId()));
     }
 
 }

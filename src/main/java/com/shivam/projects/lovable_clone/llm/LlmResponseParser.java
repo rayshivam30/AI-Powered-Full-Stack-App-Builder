@@ -46,6 +46,9 @@ public class LlmResponseParser {
             String tagName = matcher.group(2).toLowerCase();
             String attributes = matcher.group(3);
             String content = matcher.group(4).trim();
+            if (!content.contains("\n") && content.contains("\\n")) {
+                content = content.replace("\\n", "\n").replace("\\r", "").replace("\\t", "\t");
+            }
 
             // Extract attributes map
             Map<String, String> attrMap = extractAttributes(attributes);
@@ -70,6 +73,37 @@ public class LlmResponseParser {
             }
 
             events.add(builder.build());
+        }
+
+        // Fallback: If no XML <file> tags were parsed, check for markdown code blocks
+        if (events.stream().noneMatch(e -> e.getType() == ChatEventType.FILE_EDIT)) {
+            Pattern mdCodePattern = Pattern.compile(
+                    "```(?:[a-zA-Z0-9_-]+)?\\s*(?:(?://|#|/\\*)\\s*)?([a-zA-Z0-9_./-]+\\.(?:tsx|jsx|ts|js|html|css|json))?\\s*\\n([\\s\\S]*?)```"
+            );
+            Matcher mdMatcher = mdCodePattern.matcher(fullResponse);
+            while (mdMatcher.find()) {
+                String detectedPath = mdMatcher.group(1);
+                String codeContent = mdMatcher.group(2).trim();
+                if (codeContent.isEmpty()) continue;
+
+                if (detectedPath == null || detectedPath.isEmpty()) {
+                    detectedPath = "src/App.tsx";
+                }
+
+                if (!codeContent.contains("\n") && codeContent.contains("\\n")) {
+                    codeContent = codeContent.replace("\\n", "\n").replace("\\r", "").replace("\\t", "\t");
+                }
+
+                ChatEvent event = ChatEvent.builder()
+                        .chatMessage(parentMessage)
+                        .type(ChatEventType.FILE_EDIT)
+                        .filePath(detectedPath)
+                        .content(codeContent)
+                        .sequenceOrder(orderCounter++)
+                        .build();
+
+                events.add(event);
+            }
         }
 
         return events;

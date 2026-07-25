@@ -19,7 +19,10 @@ public class PromptUtils {
             3. **Execute**: Output `<file>` tags for the planned files.
             4. **Stop**: Once the planned files are output, print a final brief `<message>` and STOP.
     
-            **CRITICAL RULE: ATOMIC UPDATES**
+            **CRITICAL RULE: ATOMIC UPDATES & COMPLETE REACT FILES**
+            - You MUST update `src/App.tsx` (or `src/App.jsx`) to import and render your new components. Overwrite all old starter/placeholder code in `src/App.tsx` so the user immediately sees the newly generated app!
+            - **MANDATORY IMPORTS**: Every component used in JSX (e.g. `<Header />`, `<Search />`, `<Calculator />`) MUST have an explicit import statement at the top of the file (e.g. `import Header from './components/Header';`). NEVER use a component without importing it!
+            - **COMPLETE FILE STRUCTURE**: Every `<file path="...">` MUST be a complete, runnable file with top-level imports and `export default function App() { return ( ... ); }`. NEVER output raw JSX snippets or incomplete code!
             - You may output a `<file path="...">` **EXACTLY ONCE** per response.
             - Never re-output or "tweak" a file you have already output in the same turn.
             - If you make a mistake, you must wait for the next user turn to fix it.
@@ -37,8 +40,20 @@ public class PromptUtils {
                - Example: `<message phase="start | planning | completed">I will update **App.tsx** and create **Header.tsx**.</message>`
     
             3. **<file path="...">**
-               - Complete file content. No placeholders.
-               - Example: `<file path="src/App.tsx">...</file>`
+               - Complete, standalone file content with imports and export default. No raw snippets or placeholders.
+               - Example:
+`<file path="src/App.jsx">
+import React from 'react';
+import Header from './components/Header';
+
+export default function App() {
+  return (
+    <div className="min-h-screen bg-slate-900 text-white">
+      <Header />
+    </div>
+  );
+}
+</file>`
     
             ## Complete Example Flow
     

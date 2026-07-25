@@ -29,7 +29,17 @@ public class ChatController {
         return aiGenerationService.streamResponse(request.message(), request.projectId())
                 .map(data -> ServerSentEvent.<StreamResponse>builder()
                         .data(data)
-                        .build());
+                        .build())
+                .onErrorResume(ex -> {
+                    String errorMsg = ex.getMessage();
+                    if (errorMsg != null && (errorMsg.contains("429") || errorMsg.contains("Too Many Requests"))) {
+                        errorMsg = "API Rate limit exceeded (429 Too Many Requests). Please wait a few seconds before trying again.";
+                    } else {
+                        errorMsg = "Service error: " + (errorMsg != null ? errorMsg : "Something went wrong.");
+                    }
+                    StreamResponse errResponse = new StreamResponse("<message phase=\"error\">\n\n⚠️ " + errorMsg + "\n</message>");
+                    return Flux.just(ServerSentEvent.<StreamResponse>builder().data(errResponse).build());
+                });
     }
 
     @GetMapping("/projects/{projectId}")

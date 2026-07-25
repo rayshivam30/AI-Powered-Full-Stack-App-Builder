@@ -3,13 +3,16 @@ package com.shivam.projects.lovable_clone.controller;
 import com.shivam.projects.lovable_clone.dto.project.ProjectRequest;
 import com.shivam.projects.lovable_clone.dto.project.ProjectResponse;
 import com.shivam.projects.lovable_clone.dto.project.ProjectSummaryResponse;
+import com.shivam.projects.lovable_clone.dto.project.PreviewResponse;
 import com.shivam.projects.lovable_clone.security.AuthUtil;
 import com.shivam.projects.lovable_clone.service.ProjectService;
+import com.shivam.projects.lovable_clone.service.PreviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.List;
 
@@ -19,6 +22,7 @@ import java.util.List;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final PreviewService previewService;
 
     @GetMapping
     public ResponseEntity<List<ProjectSummaryResponse>> getMyProjects() {
@@ -33,6 +37,12 @@ public class ProjectController {
     @PostMapping
     public ResponseEntity<ProjectResponse> createProject(@RequestBody @Valid ProjectRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(projectService.createProject(request));
+    }
+
+    @PostMapping("/{id}/deploy")
+    @PreAuthorize("@security.canEditProject(#id)")
+    public ResponseEntity<PreviewResponse> deployProject(@PathVariable Long id) {
+        return ResponseEntity.ok(previewService.deploy(id));
     }
 
     @PatchMapping("/{id}")

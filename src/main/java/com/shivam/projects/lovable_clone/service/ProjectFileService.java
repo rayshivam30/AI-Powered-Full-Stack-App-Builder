@@ -12,4 +12,6 @@ public interface ProjectFileService {
     FileContentResponse getFileContent(Long projectId, String path);
 
     void saveFile(Long projectId, String filePath, String fileContent);
+
+    byte[] downloadProjectZip(Long projectId);
 }

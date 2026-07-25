@@ -94,7 +94,8 @@ public class BillingController {
             return ResponseEntity.ok().build();
 
         } catch (SignatureVerificationException e) {
-            throw new RuntimeException(e);
+            log.error("Stripe signature verification failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid signature");
         }
 
     }

@@ -20,16 +20,16 @@ spring:
 
   ai:
     openai:
-      api-key: ${OPENAI_API_KEY}
+      api-key: ${OPENAI_API_KEY:}
       base-url: https://openrouter.ai/api
       chat:
         options:
-          model: google/gemini-3-flash-preview
+          model: cohere/north-mini-code:free
           temperature: 0.0
 
 
 jwt:
-  secret-key: ${JWT_SECRET_KEY}
+  secret-key: ${JWT_SECRET_KEY:}
 
 stripe:
   api:
@@ -37,12 +37,17 @@ stripe:
   webhook:
     secret: ${STRIPE_WEBHOOK_SECRET}
 
-client.url: http://localhost:8080
+client.url: ${CLIENT_URL}
 
 logging:
   level:
     org.springframework.ai:
       chat.client: DEBUG
+
+preview:
+  docker:
+    command: ${DOCKER_COMMAND:docker}
+    host: ${PREVIEW_HOST:127.0.0.1}
 
 minio:
   url: http://localhost:9000
