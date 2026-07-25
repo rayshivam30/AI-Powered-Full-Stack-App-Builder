@@ -1,73 +1,72 @@
-# Welcome to your Lovable project
+# 🚀 Lovable AI Clone - Frontend
 
-## Project info
+A modern, high-performance Web Application Builder frontend inspired by Lovable.dev. Built with **React 18**, **TypeScript**, **Vite**, **Tailwind CSS**, and **Sandpack** for real-time in-browser code compilation.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+---
 
-## How can I edit this code?
+## ✨ Features
 
-There are several ways of editing your application.
+- ⚡ **Real-Time AI Code Generation**: Live streaming AI chat with granular file diffs and instant code updates.
+- 🌐 **In-Browser Live Sandbox (`Sandpack`)**: Runs React, TypeScript, and Tailwind applications live in your browser without external containers.
+- 🔧 **Auto-Fix & Compilation Error Watcher**: Detects runtime JSX/JS errors and provides a 1-click AI auto-fix action.
+- 📦 **One-Click Code Export**: Download full project source code as a formatted `.zip` archive.
+- 👥 **Project Sharing & Collaboration**: Invite members, assign roles (`OWNER`, `EDITOR`, `VIEWER`), and copy shareable links.
+- 💳 **Subscription & Pro Tier Upgrade**: Full pricing plan modals integrated with Stripe checkout session APIs.
+- 🚀 **Standalone Live Website Deployment**: Deploy and share live full-screen web applications (`/live/:projectId`).
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## 🛠️ Tech Stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Framework**: React 18 + Vite
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Sandbox Engine**: `@codesandbox/sandpack-react`
+- **Icons**: `lucide-react`
+- **Routing**: `react-router-dom` v6
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🚀 Getting Started
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Prerequisites
+- **Node.js**: v18+ 
+- **npm** or **bun**
 
-Follow these steps:
+### Installation
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/rayshivam30/Lovable-frontend.git
+   cd Lovable-frontend
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. **Configure Environment Variables**:
+   Create a `.env` file in the root directory:
+   ```env
+   VITE_API_URL=http://localhost:8080
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+4. **Start Development Server**:
+   ```bash
+   npm run dev
+   ```
+   Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📦 Deployment (Vercel / Netlify)
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+1. Connect your GitHub repository to **[Vercel](https://vercel.com)** or **[Netlify](https://netlify.com)**.
+2. Set Build Settings:
+   - **Framework Preset**: Vite
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+3. Add Environment Variable:
+   - `VITE_API_URL` = `https://your-backend-api.com`
+4. Click **Deploy**.
