@@ -29,6 +29,10 @@ public class ProjectFile {
     @Column(nullable = false)
     String path;
 
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    String content;
+
     String minioObjectKey;
 
     @CreationTimestamp

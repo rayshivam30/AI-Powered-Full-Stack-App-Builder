@@ -56,6 +56,14 @@ public class ProjectFileServiceImpl implements ProjectFileService {
     @Override
     public FileContentResponse getFileContent(Long projectId, String path) {
         String cleanPath = path.startsWith("/") ? path.substring(1) : path;
+
+        // 1. Try reading directly from DB first (fast & 100% reliable)
+        ProjectFile projectFile = projectFileRepository.findByProjectIdAndPath(projectId, cleanPath).orElse(null);
+        if (projectFile != null && projectFile.getContent() != null && !projectFile.getContent().isEmpty()) {
+            return new FileContentResponse(cleanPath, projectFile.getContent());
+        }
+
+        // 2. Fallback to MinIO / S3 if DB content is empty
         String objectName = projectId + "/" + cleanPath;
         try (
                 InputStream is = minioClient.getObject(
@@ -68,6 +76,13 @@ public class ProjectFileServiceImpl implements ProjectFileService {
             if (!content.contains("\n") && content.contains("\\n")) {
                 content = content.replace("\\n", "\n").replace("\\r", "").replace("\\t", "\t");
             }
+
+            // Backfill DB if found in S3
+            if (projectFile != null) {
+                projectFile.setContent(content);
+                projectFileRepository.save(projectFile);
+            }
+
             return new FileContentResponse(cleanPath, content);
         } catch (Exception e) {
             log.error("Failed to read file from S3: {}/{}. Returning empty content.", projectId, cleanPath);
@@ -88,9 +103,27 @@ public class ProjectFileServiceImpl implements ProjectFileService {
             content = content.replace("\\n", "\n").replace("\\r", "").replace("\\t", "\t");
         }
 
-        byte[] contentBytes = content == null ? new byte[0] : content.getBytes(StandardCharsets.UTF_8);
+        // 1. Save content & metadata in PostgreSQL database (100% reliable)
+        try {
+            ProjectFile file = projectFileRepository.findByProjectIdAndPath(projectId, cleanPath)
+                    .orElseGet(() -> ProjectFile.builder()
+                            .project(project)
+                            .path(cleanPath)
+                            .minioObjectKey(objectKey)
+                            .createdAt(Instant.now())
+                            .build());
 
-        // Upload to S3/MinIO
+            file.setContent(content);
+            file.setUpdatedAt(Instant.now());
+            projectFileRepository.save(file);
+            log.info("Saved file and code content in database: {}", objectKey);
+        } catch (Exception e) {
+            log.error("Failed to save project file metadata in DB {}/{}", projectId, cleanPath, e);
+            throw new RuntimeException("File save failed", e);
+        }
+
+        // 2. Upload to S3/MinIO in background/best-effort
+        byte[] contentBytes = content == null ? new byte[0] : content.getBytes(StandardCharsets.UTF_8);
         try {
             try {
                 boolean exists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(projectBucket).build());
@@ -112,24 +145,6 @@ public class ProjectFileServiceImpl implements ProjectFileService {
             log.info("Uploaded object to S3: {}", objectKey);
         } catch (Exception e) {
             log.error("S3 upload failed for {}/{}: {}", projectId, cleanPath, e.getMessage());
-        }
-
-        // Always save metadata in PostgreSQL database
-        try {
-            ProjectFile file = projectFileRepository.findByProjectIdAndPath(projectId, cleanPath)
-                    .orElseGet(() -> ProjectFile.builder()
-                            .project(project)
-                            .path(cleanPath)
-                            .minioObjectKey(objectKey)
-                            .createdAt(Instant.now())
-                            .build());
-
-            file.setUpdatedAt(Instant.now());
-            projectFileRepository.save(file);
-            log.info("Saved file metadata in database: {}", objectKey);
-        } catch (Exception e) {
-            log.error("Failed to save project file metadata in DB {}/{}", projectId, cleanPath, e);
-            throw new RuntimeException("File save failed", e);
         }
     }
 
