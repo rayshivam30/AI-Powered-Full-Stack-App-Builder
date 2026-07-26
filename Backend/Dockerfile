@@ -5,8 +5,8 @@ COPY pom.xml .
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# Step 2: Runtime stage with Java 21 JRE
-FROM eclipse-temurin:21-jre-alpine
+# Step 2: Runtime stage with Java 21 JRE (Debian/glibc based for Netty/Spring AI native library compatibility)
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
