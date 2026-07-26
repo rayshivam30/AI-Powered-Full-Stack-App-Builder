@@ -33,25 +33,24 @@ jwt:
 
 stripe:
   api:
-    secret: ${STRIPE_API_SECRET}
+    secret: ${STRIPE_API_SECRET:}
   webhook:
-    secret: ${STRIPE_WEBHOOK_SECRET}
+    secret: ${STRIPE_WEBHOOK_SECRET:}
 
 client:
-  url: ${CLIENT_URL}
+  url: ${CLIENT_URL:http://localhost:5173}
 
 logging:
-  level
-    org.springframework.ai:
-      chat.client: DEBUG
+  level:
+    org.springframework.ai.chat.client: DEBUG
 
 preview:
   docker:
-    command: ${DOCKER_COMMAND}
-    host: ${PREVIEW_HOST}
+    command: ${DOCKER_COMMAND:docker}
+    host: ${PREVIEW_HOST:localhost}
 
 minio:
-  url: ${MINIO_URL}
-  access-key: ${MINIO_ACCESS_KEY}
-  secret-key: ${MINIO_SECRET_KEY}
-  project-bucket: ${MINIO_PROJECT_BUCKET}
+  url: ${MINIO_URL:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin123}
+  project-bucket: ${MINIO_PROJECT_BUCKET:lovable-projects}
