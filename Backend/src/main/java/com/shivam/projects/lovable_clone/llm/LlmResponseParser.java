@@ -27,13 +27,14 @@ public class LlmResponseParser {
      */
 
     private static final Pattern GENERIC_TAG_PATTERN = Pattern.compile(
-            "(<(message|file|tool)([^>]*)>)([\\s\\S]*?)(</\\2>)",
+            "(<(message|file|tool)([^>]*)>)([\\s\\S]*?)(?:</\\2>|(?=<\\/?(?:message|file|tool)\\b)|$)",
             Pattern.CASE_INSENSITIVE | Pattern.DOTALL
     );
 
     // Helper to extract specific attributes (path="..." or args="...") from Group 3
     private static final Pattern ATTRIBUTE_PATTERN = Pattern.compile(
-            "(path|args)=\"([^\"]+)\""
+            "(path|args)\\s*=\\s*[\"']?([^\"'\\s>]+)[\"']?",
+            Pattern.CASE_INSENSITIVE
     );
 
     public List<ChatEvent> parseChatEvents(String fullResponse, ChatMessage parentMessage) {

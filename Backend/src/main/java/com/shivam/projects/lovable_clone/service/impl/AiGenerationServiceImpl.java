@@ -96,12 +96,12 @@ public class AiGenerationServiceImpl implements AiGenerationService {
                     fullResponseBuffer.append(content);
                 })
                 .doOnComplete(() -> {
-                    Schedulers.boundedElastic().schedule(() -> {
-//                        parseAndSaveFiles(fullResponseBuffer.toString(), projectId);
-
-                        long duration = (endTime.get() - startTime.get()) /  1000;
+                    try {
+                        long duration = (endTime.get() - startTime.get()) / 1000;
                         finalizeChats(userMessage, chatSession, fullResponseBuffer.toString(), duration, usageRef.get());
-                    });
+                    } catch (Exception e) {
+                        log.error("Error finalizing chats and saving files for projectId {}: {}", projectId, e.getMessage(), e);
+                    }
                 })
                 .doOnError(error -> log.error("Error during streaming for projectId: {}", projectId))
                 .map(response -> {
