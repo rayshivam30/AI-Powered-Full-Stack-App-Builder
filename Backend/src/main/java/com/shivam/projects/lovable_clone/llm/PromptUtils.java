@@ -22,6 +22,7 @@ public class PromptUtils {
             **CRITICAL RULE: ATOMIC UPDATES & COMPLETE REACT FILES**
             - You MUST update `src/App.tsx` (or `src/App.jsx`) to import and render your new components. Overwrite all old starter/placeholder code in `src/App.tsx` so the user immediately sees the newly generated app!
             - **MANDATORY IMPORTS**: Every component used in JSX (e.g. `<Header />`, `<Search />`, `<Calculator />`) MUST have an explicit import statement at the top of the file (e.g. `import Header from './components/Header';`). NEVER use a component without importing it!
+            - **MATCH EXPORT / IMPORT**: If a component file uses `export default function Calculator()`, import it as `import Calculator from './Calculator';`. If it uses `export function Calculator()`, import it as `import { Calculator } from './Calculator';`. NEVER mix default and named imports!
             - **COMPLETE FILE STRUCTURE**: Every `<file path="...">` MUST be a complete, runnable file with top-level imports and `export default function App() { return ( ... ); }`. NEVER output raw JSX snippets or incomplete code!
             - You may output a `<file path="...">` **EXACTLY ONCE** per response.
             - Never re-output or "tweak" a file you have already output in the same turn.
@@ -84,7 +85,7 @@ export default function App() {
              - Predictable layouts and component patterns
              - Cookie-cutter design that lacks context-specific character
     
-           Interpret creatively and make unexpected choices that feel genuinely designed for the context. Vary between light and dark themes, different fonts, different aesthetics. You still tend to converge on common choices (Space Grotesk, for example) across generations. Avoid this: it is critical that you think outside the box!
+            Interpret creatively and make unexpected choices that feel genuinely designed for the context. Vary between light and dark themes, different fonts, different aesthetics. You still tend to converge on common choices (Space Grotesk, for example) across generations. Avoid this: it is critical that you think outside the box!
     
             ## 4. Coding Standards
             - **TypeScript**: Strict types. No `any`.
@@ -114,11 +115,21 @@ export default function App() {
     
             ## 7. Never Do This:
             - Never use emojis, line breaks, etc. in your response. The message tag can only have basic markdown.
-            - Never call the read_files tool to get the same file which you have already received in any previous tool call.\s
+            - Never call the read_files tool to get the same file which you have already received in any previous tool call.
     
             ## 8. Always Do This:
             - Always read the file by using the read_files tool before updating the file content, if the file content is not known by you already.
             - If you are going to calling read_files tool then Always generate a tool tag with proper args before calling the read_files tool.
             - Always keep your message short and to the point.
+
+            ## 9. Error Resolution Protocol (CRITICAL)
+            When fixing runtime or compilation errors (e.g., Sandbox Error or React render errors):
+            - **Element type is invalid: expected a string or function but got: undefined**:
+              1. **CAUSE**: Mismatch between `export` and `import` OR importing a non-existent `lucide-react` icon.
+              2. **SOLUTION**:
+                 - If `Calculator.tsx` has `export default function Calculator()`, import it as `import Calculator from './Calculator';`.
+                 - If `Calculator.tsx` has `export function Calculator()`, import it as `import { Calculator } from './Calculator';`.
+                 - Ensure `Calculator.tsx` has `export default Calculator;` or `export default function Calculator`.
+                 - Verify all imported icons exist in `lucide-react` (e.g., `import { Calculator } from 'lucide-react'`).
             """;
 }

@@ -36,15 +36,15 @@ Lovable AI Clone is a full-stack AI application generator inspired by **Lovable.
 
 ## 📸 Screenshots Showcase
 
-| **Projects Dashboard** | **Code Editor & Sandpack Preview** |
+| **AI Chat & Code Editor Workspace** | **Projects Dashboard** |
 | :---: | :---: |
-| ![Dashboard](docs/screenshots/dashboard.png) | ![Code Editor](docs/screenshots/editor.png) |
-| *Multi-project workspace management* | *In-browser code editor and Sandpack preview* |
+| ![AI Chat and Code Editor Workspace](docs/screenshots/code_editor.png) | ![Dashboard](docs/screenshots/dashboard.png) |
+| *Real-time AI chat stream, file tree, & code editor* | *Multi-project workspace management* |
 
-| **AI Chat & Event Stream** | **Stripe Checkout & Billing** |
+| **Sandpack Live Preview** | **Chat Assistant & Stream Parser** |
 | :---: | :---: |
-| ![Chat Assistant](docs/screenshots/chat.png) | ![Stripe Checkout](docs/screenshots/billing.png) |
-| *SSE stream parser and tool calling* | *Subscription plan upgrade modal* |
+| ![Live Preview](docs/screenshots/editor.png) | ![Chat Assistant Stream](docs/screenshots/chat.png) |
+| *Isolated browser sandbox execution with hot component reload* | *Streaming event cards, reasoning steps, and response output* |
 
 ---
 
