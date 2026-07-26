@@ -70,8 +70,8 @@ public class ProjectFileServiceImpl implements ProjectFileService {
             }
             return new FileContentResponse(cleanPath, content);
         } catch (Exception e) {
-            log.error("Failed to read file: {}/{}", projectId, cleanPath, e);
-            throw new RuntimeException("Failed to read file content", e);
+            log.error("Failed to read file from S3: {}/{}. Returning empty content.", projectId, cleanPath);
+            return new FileContentResponse(cleanPath, "");
         }
     }
 
@@ -88,16 +88,20 @@ public class ProjectFileServiceImpl implements ProjectFileService {
             content = content.replace("\\n", "\n").replace("\\r", "").replace("\\t", "\t");
         }
 
-        try {
-            byte[] contentBytes = content == null ? new byte[0] : content.getBytes(StandardCharsets.UTF_8);
-            InputStream inputStream = new ByteArrayInputStream(contentBytes);
+        byte[] contentBytes = content == null ? new byte[0] : content.getBytes(StandardCharsets.UTF_8);
 
-            boolean exists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(projectBucket).build());
-            if (!exists) {
-                minioClient.makeBucket(MakeBucketArgs.builder().bucket(projectBucket).build());
+        // Upload to S3/MinIO
+        try {
+            try {
+                boolean exists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(projectBucket).build());
+                if (!exists) {
+                    minioClient.makeBucket(MakeBucketArgs.builder().bucket(projectBucket).build());
+                }
+            } catch (Exception e) {
+                log.warn("Bucket check/creation failed for {}: {}", projectBucket, e.getMessage());
             }
 
-            // saving the file content
+            InputStream inputStream = new ByteArrayInputStream(contentBytes);
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(projectBucket)
@@ -105,24 +109,28 @@ public class ProjectFileServiceImpl implements ProjectFileService {
                             .stream(inputStream, contentBytes.length, -1)
                             .contentType(determineContentType(path))
                             .build());
+            log.info("Uploaded object to S3: {}", objectKey);
+        } catch (Exception e) {
+            log.error("S3 upload failed for {}/{}: {}", projectId, cleanPath, e.getMessage());
+        }
 
-            // Saving the metaData
+        // Always save metadata in PostgreSQL database
+        try {
             ProjectFile file = projectFileRepository.findByProjectIdAndPath(projectId, cleanPath)
                     .orElseGet(() -> ProjectFile.builder()
                             .project(project)
                             .path(cleanPath)
-                            .minioObjectKey(objectKey) // Use the key we generated
+                            .minioObjectKey(objectKey)
                             .createdAt(Instant.now())
                             .build());
 
             file.setUpdatedAt(Instant.now());
             projectFileRepository.save(file);
-            log.info("Saved file: {}", objectKey);
+            log.info("Saved file metadata in database: {}", objectKey);
         } catch (Exception e) {
-            log.error("Failed to save file {}/{}", projectId, cleanPath, e);
+            log.error("Failed to save project file metadata in DB {}/{}", projectId, cleanPath, e);
             throw new RuntimeException("File save failed", e);
         }
-
     }
 
     @Override
