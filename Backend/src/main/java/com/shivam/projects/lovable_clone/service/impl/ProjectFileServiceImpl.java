@@ -89,6 +89,12 @@ public class ProjectFileServiceImpl implements ProjectFileService {
         try {
             byte[] contentBytes = content == null ? new byte[0] : content.getBytes(StandardCharsets.UTF_8);
             InputStream inputStream = new ByteArrayInputStream(contentBytes);
+
+            boolean exists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(projectBucket).build());
+            if (!exists) {
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(projectBucket).build());
+            }
+
             // saving the file content
             minioClient.putObject(
                     PutObjectArgs.builder()
