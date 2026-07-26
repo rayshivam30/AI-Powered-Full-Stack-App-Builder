@@ -18,6 +18,9 @@ public class PlanServiceImpl implements PlanService {
 
     private final PlanRepository planRepository;
 
+    @org.springframework.beans.factory.annotation.Value("${stripe.price.pro:price_pro}")
+    private String stripeProPriceId;
+
     @PostConstruct
     public void initDefaultPlans() {
         if (planRepository.count() == 0) {
@@ -33,7 +36,7 @@ public class PlanServiceImpl implements PlanService {
 
             Plan proPlan = new Plan();
             proPlan.setName("Pro Builder");
-            proPlan.setStripePriceId("price_pro");
+            proPlan.setStripePriceId(stripeProPriceId);
             proPlan.setMaxProjects(999);
             proPlan.setMaxTokensPerDay(1000000);
             proPlan.setMaxPreviews(9999);
@@ -42,6 +45,15 @@ public class PlanServiceImpl implements PlanService {
 
             planRepository.saveAll(List.of(freePlan, proPlan));
             log.info("Default subscription plans seeded successfully.");
+        } else {
+            // Update existing Pro plan with real Stripe price ID if specified in env
+            planRepository.findAll().forEach(plan -> {
+                if (plan.getUnlimitedAi() && !stripeProPriceId.equals("price_pro") && !stripeProPriceId.equals(plan.getStripePriceId())) {
+                    plan.setStripePriceId(stripeProPriceId);
+                    planRepository.save(plan);
+                    log.info("Updated Pro plan Stripe Price ID to: {}", stripeProPriceId);
+                }
+            });
         }
     }
 

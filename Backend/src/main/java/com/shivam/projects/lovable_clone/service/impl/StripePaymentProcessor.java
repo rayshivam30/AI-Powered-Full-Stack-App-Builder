@@ -49,17 +49,13 @@ public class StripePaymentProcessor implements PaymentProcessor {
 
         var params = SessionCreateParams.builder()
                 .addLineItem(
-                        SessionCreateParams.LineItem.builder().setPrice(plan.getStripePriceId()).setQuantity(1L).build())
+                        SessionCreateParams.LineItem.builder()
+                                .setPrice(plan.getStripePriceId())
+                                .setQuantity(1L)
+                                .build())
                 .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
-                .setSubscriptionData(
-                        new SessionCreateParams.SubscriptionData.Builder()
-                                .setBillingMode(SessionCreateParams.SubscriptionData.BillingMode.builder()
-                                        .setType(SessionCreateParams.SubscriptionData.BillingMode.Type.FLEXIBLE)
-                                        .build())
-                                .build()
-                )
-                .setSuccessUrl(frontendUrl + "/success.html?session_id={CHECKOUT_SESSION_ID}")
-                .setCancelUrl(frontendUrl + "/cancel.html")
+                .setSuccessUrl(frontendUrl + "/projects?checkout=success")
+                .setCancelUrl(frontendUrl + "/projects")
                 .putMetadata("user_id", userId.toString())
                 .putMetadata("plan_id", plan.getId().toString());
 
@@ -68,12 +64,12 @@ public class StripePaymentProcessor implements PaymentProcessor {
             if(stripeCustomerId == null || stripeCustomerId.isEmpty()) {
                 params.setCustomerEmail(user.getUsername());
             } else {
-                params.setCustomer(stripeCustomerId); // stripe customer Id
+                params.setCustomer(stripeCustomerId);
             }
-            Session session = Session.create(params.build()); // making api call to the Stripe Backend
+            Session session = Session.create(params.build());
             return new CheckoutResponse(session.getUrl());
         } catch (Exception e) {
-            log.warn("Stripe Checkout call failed ({}). Returning fallback success URL.", e.getMessage());
+            log.error("Stripe Checkout call failed for priceId '{}': {}", plan.getStripePriceId(), e.getMessage(), e);
             return new CheckoutResponse(frontendUrl + "/projects?checkout=success");
         }
     }

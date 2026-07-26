@@ -36,6 +36,8 @@ stripe:
     secret: ${STRIPE_API_SECRET:}
   webhook:
     secret: ${STRIPE_WEBHOOK_SECRET:}
+  price:
+    pro: ${STRIPE_PRO_PRICE_ID:price_pro}
 
 client:
   url: ${CLIENT_URL:http://localhost:5173}
