@@ -4,9 +4,9 @@ spring:
     description: this is application
 
   datasource:
-    url: jdbc:postgresql://localhost:9010/pgvector-test
-    username: user
-    password: password
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:9010/pgvector-test}
+    username: ${SPRING_DATASOURCE_USERNAME:user}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -33,11 +33,12 @@ jwt:
 
 stripe:
   api:
-    secret: ${STRIPE_API_SECRET}
+    secret: ${STRIPE_API_SECRET:}
   webhook:
-    secret: ${STRIPE_WEBHOOK_SECRET}
+    secret: ${STRIPE_WEBHOOK_SECRET:}
 
-client.url: ${CLIENT_URL}
+client:
+  url: ${CLIENT_URL:http://localhost:5173}
 
 logging:
   level:
@@ -50,7 +51,7 @@ preview:
     host: ${PREVIEW_HOST:127.0.0.1}
 
 minio:
-  url: http://localhost:9000
-  access-key: minioadmin
-  secret-key: minioadmin123
-  project-bucket: projects
+  url: ${MINIO_URL:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin123}
+  project-bucket: ${MINIO_PROJECT_BUCKET:projects}
