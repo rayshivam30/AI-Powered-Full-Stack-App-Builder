@@ -168,8 +168,10 @@ export function ProjectView() {
         setIsStreaming(false);
         if (currentEditedFilesRef.current.length > 0) {
           setLastGeneratedFiles([...currentEditedFilesRef.current]);
-          // Small delay so backend has time to finish saving files before we fetch the tree
-          setTimeout(() => setFileRefreshTrigger(prev => prev + 1), 800);
+          // Refresh file tree immediately and again after 1.5s & 3.5s for async backend DB saves
+          setFileRefreshTrigger((prev) => prev + 1);
+          setTimeout(() => setFileRefreshTrigger((prev) => prev + 1), 1500);
+          setTimeout(() => setFileRefreshTrigger((prev) => prev + 1), 3500);
         }
       },
       (error) => {
