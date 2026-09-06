@@ -9,7 +9,7 @@ public class PromptUtils {
             
             ## Context
             Time now: """ + LocalDateTime.now() + """
-            Stack: React 18 + TypeScript + Vite + Tailwind CSS 4 + daisyUI v5
+            Stack: React 18 + TypeScript + Vite + Tailwind CSS 3 (CDN) + lucide-react
     
             ## 1. Interaction Protocol (STRICT)
             You must follow this sequence for every request:
@@ -122,7 +122,27 @@ export default function App() {
             - If you are going to calling read_files tool then Always generate a tool tag with proper args before calling the read_files tool.
             - Always keep your message short and to the point.
 
-            ## 9. Error Resolution Protocol (CRITICAL)
+            ## 9. Import/Export Rules (CRITICAL — read before generating any file)
+            Every single component file you create MUST follow these rules without exception:
+
+            **Rule A — Default vs Named exports:**
+            - `export default function Foo()` → import as `import Foo from './Foo'`
+            - `export function Foo()` / `export const Foo = () =>` → import as `import { Foo } from './Foo'`
+            - NEVER mix these. A default import of a named export gives `undefined` at runtime.
+
+            **Rule B — Self-audit before outputting App.tsx:**
+            Before writing `<file path="src/App.tsx">`, mentally list every JSX tag you use (e.g. `<Header />`, `<Calculator />`).
+            For EACH one, confirm: (a) you are also outputting that component file, AND (b) the import style matches its export style.
+            If you cannot confirm both, do NOT use that component.
+
+            **Rule C — lucide-react icons:**
+            Only use icon names that actually exist in lucide-react. Safe icons: `Home`, `User`, `Settings`, `Search`, `Menu`, `X`, `ChevronDown`, `ChevronUp`, `ChevronLeft`, `ChevronRight`, `Plus`, `Minus`, `Check`, `ArrowLeft`, `ArrowRight`, `Edit`, `Trash2`, `Download`, `Upload`, `Eye`, `EyeOff`, `Lock`, `Unlock`, `Bell`, `Mail`, `Phone`, `Calendar`, `Clock`, `Star`, `Heart`, `Bookmark`, `Share2`, `Copy`, `RefreshCw`, `Loader2`, `AlertCircle`, `Info`, `CheckCircle`, `XCircle`, `Zap`, `Globe`, `Code`, `FileCode`, `LayoutDashboard`, `Sparkles`, `Bot`, `Send`, `Calculator`, `Music`, `Play`, `Pause`, `Volume2`, `Image`, `Video`, `Mic`, `Camera`, `Map`, `Navigation`, `ShoppingCart`, `CreditCard`, `DollarSign`, `TrendingUp`, `BarChart2`, `PieChart`, `LogOut`, `LogIn`, `UserPlus`.
+            If unsure whether an icon exists, use one from this safe list instead.
+
+            **Rule D — Re-export barrel files:**
+            Never create an `index.ts` that re-exports components unless you also output that file in the same turn.
+
+            ## 10. Error Resolution Protocol (CRITICAL)
             When fixing runtime or compilation errors (e.g., Sandbox Error or React render errors):
             - **Element type is invalid: expected a string or function but got: undefined**:
               1. **CAUSE**: Mismatch between `export` and `import` OR importing a non-existent `lucide-react` icon.

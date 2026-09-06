@@ -5,6 +5,7 @@ import com.shivam.projects.lovable_clone.entity.*;
 import com.shivam.projects.lovable_clone.enums.ChatEventType;
 import com.shivam.projects.lovable_clone.enums.MessageRole;
 import com.shivam.projects.lovable_clone.error.ResourceNotFoundException;
+import com.shivam.projects.lovable_clone.llm.CodeSanitizer;
 import com.shivam.projects.lovable_clone.llm.LlmResponseParser;
 import com.shivam.projects.lovable_clone.llm.PromptUtils;
 import com.shivam.projects.lovable_clone.llm.advisors.FileTreeContextAdvisor;
@@ -45,6 +46,7 @@ public class AiGenerationServiceImpl implements AiGenerationService {
     private final UserRepository userRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final ChatEventRepository chatEventRepository;
+    private final CodeSanitizer codeSanitizer;
 
     private static final Pattern FILE_TAG_PATTERN = Pattern.compile("<file path=\"([^\"]+)\">(.*?)</file>", Pattern.DOTALL);
 
@@ -139,9 +141,21 @@ public class AiGenerationServiceImpl implements AiGenerationService {
                         .sequenceOrder(0)
                 .build());
 
+        // Run import/export sanitizer across all generated files before saving
+        Map<String, String> fileMap = new java.util.HashMap<>();
+        chatEventList.stream()
+                .filter(e -> e.getType() == ChatEventType.FILE_EDIT && e.getFilePath() != null && e.getContent() != null)
+                .forEach(e -> fileMap.put(e.getFilePath(), e.getContent()));
+
+        codeSanitizer.sanitize(fileMap);
+
         chatEventList.stream()
                 .filter(e -> e.getType() == ChatEventType.FILE_EDIT && e.getFilePath() != null)
-                .forEach(e -> projectFileService.saveFile(projectId, e.getFilePath(), e.getContent()));
+                .forEach(e -> {
+                    String sanitized = fileMap.get(e.getFilePath());
+                    if (sanitized != null) e.setContent(sanitized);
+                    projectFileService.saveFile(projectId, e.getFilePath(), e.getContent());
+                });
 
         chatEventRepository.saveAll(chatEventList);
     }
