@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Loader2, Lock, Mail, Sparkles } from "lucide-react";
+import { Loader2, Lock, Mail, Sparkles, ArrowLeft } from "lucide-react";
 import { api, setAuthToken, setUserInfo } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +57,15 @@ export function LoginModal() {
         <div className="absolute top-1/3 left-1/3 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
       </div>
 
+      {/* Back to home */}
+      <Link
+        to="/"
+        className="absolute top-5 left-5 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Back to home
+      </Link>
+
       <div className="relative w-full max-w-md">
         {/* Card */}
         <div className="bg-card border border-border/50 rounded-2xl p-8 shadow-2xl">
@@ -65,7 +74,7 @@ export function LoginModal() {
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-xl bg-primary/20 mb-5">
               <Sparkles className="w-7 h-7 text-primary" />
             </div>
-            <h1 className="text-2xl font-semibold text-foreground mb-2">Welcome to Lovable</h1>
+            <h1 className="text-2xl font-semibold text-foreground mb-2">Welcome back</h1>
             <p className="text-muted-foreground text-sm">Sign in to continue building</p>
           </div>
 

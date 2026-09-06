@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Loader2, Mail, Sparkles, User, Lock } from "lucide-react";
+import { Loader2, Mail, Sparkles, User, Lock, ArrowLeft } from "lucide-react";
 import { api, setAuthToken, setUserInfo } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +55,15 @@ export default function Signup() {
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute top-1/3 left-1/3 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
             </div>
+
+            {/* Back to home */}
+            <Link
+                to="/"
+                className="absolute top-5 left-5 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+                <ArrowLeft className="w-4 h-4" />
+                Back to home
+            </Link>
 
             <div className="relative w-full max-w-md">
                 {/* Card */}

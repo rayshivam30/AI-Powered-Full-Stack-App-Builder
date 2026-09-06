@@ -8,7 +8,6 @@ import {
   ArrowRight,
   GitBranch,
   Users,
-  Download,
   MessageSquare,
 } from "lucide-react";
 import { isAuthenticated } from "@/lib/api";
@@ -26,7 +25,7 @@ function NavBar() {
           <div className="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center">
             <Sparkles className="w-4 h-4 text-primary" />
           </div>
-          <span className="gradient-text">AppForge</span>
+          <span className="gradient-text">AI-powered app builder</span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -316,7 +315,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-sm font-semibold">
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="gradient-text">AppForge</span>
+            <span className="gradient-text">AI-powered app builder</span>
           </div>
           <p className="text-muted-foreground text-xs">
             Built with React, Spring Boot, and a lot of AI.
