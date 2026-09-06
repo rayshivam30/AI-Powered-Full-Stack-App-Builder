@@ -1,5 +1,11 @@
 package com.shivam.projects.lovable_clone.service.impl;
 
+import java.time.Instant;
+import java.util.List;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+
 import com.shivam.projects.lovable_clone.dto.project.ProjectRequest;
 import com.shivam.projects.lovable_clone.dto.project.ProjectResponse;
 import com.shivam.projects.lovable_clone.dto.project.ProjectSummaryResponse;
@@ -17,17 +23,11 @@ import com.shivam.projects.lovable_clone.repository.UserRepository;
 import com.shivam.projects.lovable_clone.security.AuthUtil;
 import com.shivam.projects.lovable_clone.service.ProjectService;
 import com.shivam.projects.lovable_clone.service.ProjectTemplateService;
-import com.shivam.projects.lovable_clone.service.SubscriptionService;
+
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Service;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,21 +40,15 @@ public class ProjectServiceImpl implements ProjectService {
     ProjectMapper projectMapper;
     ProjectMemberRepository projectMemberRepository;
     AuthUtil authUtil;
-    SubscriptionService subscriptionService;
     ProjectTemplateService projectTemplateService;
 
     @Override
     public ProjectResponse createProject(ProjectRequest request) {
 
-        if(!subscriptionService.canCreateNewProject()) {
-            throw new BadRequestException("User cannot create a New project with current Plan, Upgrade plan now.");
-        }
-
         Long userId = authUtil.getCurrentUserId();
-//        User owner = userRepository.findById(userId).orElseThrow(
-//                () -> new ResourceNotFoundException("User", userId.toString())
-//        );
-        User owner = userRepository.getReferenceById(userId);
+        User owner = userRepository.findById(userId).orElseThrow(
+                () -> new ResourceNotFoundException("User", userId.toString())
+        );
 
         Project project = Project.builder()
                 .name(request.name())

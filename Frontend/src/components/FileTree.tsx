@@ -84,7 +84,10 @@ function FileTreeItem({ node, depth, selectedPath, onSelectFile }: FileTreeItemP
 
   return (
     <div>
-      <div
+      <button
+        type="button"
+        aria-expanded={isDirectory ? isExpanded : undefined}
+        aria-current={isSelected ? "page" : undefined}
         className={cn(
           "file-tree-item",
           isSelected && "active"
@@ -103,7 +106,7 @@ function FileTreeItem({ node, depth, selectedPath, onSelectFile }: FileTreeItemP
         )}
         <FileIcon className={cn("w-4 h-4 shrink-0", fileColor)} />
         <span className="truncate text-sm">{node.name}</span>
-      </div>
+      </button>
       
       {isDirectory && isExpanded && node.children && (
         <div>

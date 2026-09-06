@@ -22,10 +22,6 @@ export interface FileNode {
   children?: FileNode[];
 }
 
-export interface DeployResponse {
-  previewUrl: string;
-}
-
 export interface ChatHistoryMessage {
   id: number;
   role: "USER" | "ASSISTANT";
@@ -64,6 +60,7 @@ export interface ProjectSummaryResponse {
   thumbnailUrl?: string; // Optional URL for project thumbnail
   role?: ProjectRole; // Added to show user's role in the project list
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface ProjectResponse {

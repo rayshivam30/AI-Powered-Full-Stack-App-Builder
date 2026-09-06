@@ -1,4 +1,4 @@
-import { ChatMessage, DeployResponse, FileNode, LoginCredentials, LoginResponse, ProjectSummaryResponse, ProjectResponse, ProjectMember, ProjectRole, SignupRequest, AuthResponse, User } from "./types";
+import { ChatMessage, FileNode, LoginCredentials, LoginResponse, ProjectSummaryResponse, ProjectResponse, ProjectMember, ProjectRole, SignupRequest, AuthResponse, User } from "./types";
 
 const BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, "") ?? "";
 
@@ -169,23 +169,6 @@ export const api = {
     return data.content;
   },
 
-  async deploy(projectId: string): Promise<DeployResponse> {
-    const response = await fetch(`${BASE_URL}/api/projects/${projectId}/deploy`, {
-      method: "POST",
-      headers: { ...getAuthHeaders() },
-    });
-
-    if (!response.ok) {
-      throw new Error("Deployment failed");
-    }
-
-    return response.json();
-  },
-
-  async deployProject(projectId: string): Promise<DeployResponse> {
-    return this.deploy(projectId);
-  },
-
   async getProjects(): Promise<ProjectSummaryResponse[]> {
     const response = await fetch(`${BASE_URL}/api/projects`, {
       headers: { ...getAuthHeaders() },
@@ -314,29 +297,6 @@ export const api = {
     if (!response.ok) {
       throw new Error("Failed to remove member");
     }
-  },
-
-  async getPlans(): Promise<any[]> {
-    const response = await fetch(`${BASE_URL}/api/plans`, {
-      headers: { ...getAuthHeaders() },
-    });
-    if (!response.ok) {
-      throw new Error("Failed to fetch plans");
-    }
-    return response.json();
-  },
-
-  async createCheckoutSession(planId: number): Promise<{ checkoutUrl: string }> {
-    const response = await fetch(`${BASE_URL}/api/payments/checkout`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...getAuthHeaders() },
-      body: JSON.stringify({ planId }),
-    });
-    if (!response.ok) {
-      const errText = await response.text().catch(() => "");
-      throw new Error(errText || "Failed to create checkout session");
-    }
-    return response.json();
   },
 
   async getChatHistory(projectId: string): Promise<ChatMessage[]> {

@@ -9,10 +9,9 @@ interface CodeEditorProps {
   content: string;
   filePath: string | null;
   isLoading?: boolean;
-  onCodeChange?: (newCode: string) => void;
 }
 
-export function CodeEditor({ content, filePath, isLoading, onCodeChange }: CodeEditorProps) {
+export function CodeEditor({ content, filePath, isLoading }: CodeEditorProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -60,7 +59,6 @@ export function CodeEditor({ content, filePath, isLoading, onCodeChange }: CodeE
         theme={githubDark}
         editable={false}
         extensions={getLanguage(filePath)}
-        onChange={(value) => onCodeChange?.(value)}
         basicSetup={{
           lineNumbers: true,
           foldGutter: true,

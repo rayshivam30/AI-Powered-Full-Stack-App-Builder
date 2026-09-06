@@ -207,86 +207,9 @@ export function PreviewPanel({
       });
     }
 
-    // 5. Fix common AI icon mismatch errors (e.g. Delete -> Trash2 in lucide-react)
-    Object.keys(combined).forEach((key) => {
-      if (key.endsWith(".tsx") || key.endsWith(".jsx") || key.endsWith(".js") || key.endsWith(".ts")) {
-        let code = combined[key].code;
-        if (code.includes("from 'lucide-react'") || code.includes('from "lucide-react"')) {
-          code = code.replace(/\bDelete\b/g, "Trash2");
-          combined[key].code = code;
-        }
-      }
-    });
-
-    // 6. Auto-format raw JSX snippets into valid React components if export/function is missing
-    Object.keys(combined).forEach((key) => {
-      if (key.endsWith(".tsx") || key.endsWith(".jsx") || key.endsWith(".js") || key.endsWith(".ts")) {
-        let code = combined[key].code.trim();
-
-        if (!code.includes("export default") && !code.includes("export function") && !code.includes("function ") && !code.includes("const ") && !code.includes("class ")) {
-          const fileBasename = key.split("/").pop()?.replace(/\.(jsx|tsx|js|ts)$/, "") || "App";
-          const compName = fileBasename.charAt(0).toUpperCase() + fileBasename.slice(1);
-          code = `import React from 'react';\n\nexport default function ${compName}() {\n  return (\n${code}\n  );\n}`;
-          combined[key].code = code;
-        }
-      }
-    });
-
-    // 7. Robust export reconciler: guarantee BOTH default and named exports exist for all components
-    Object.keys(combined).forEach((key) => {
-      if (key.endsWith(".tsx") || key.endsWith(".jsx") || key.endsWith(".js") || key.endsWith(".ts")) {
-        let code = combined[key].code;
-
-        const compNameMatch =
-          code.match(/(?:export\s+(?:default\s+)?)?(?:function|const|class)\s+([A-Z][a-zA-Z0-9_]*)/) ||
-          code.match(/export\s+default\s+([A-Z][a-zA-Z0-9_]*)/);
-
-        if (compNameMatch) {
-          const compName = compNameMatch[1];
-          if (!code.includes("export default")) {
-            code += `\n\nexport default ${compName};`;
-          }
-          if (!new RegExp(`export\\s+{[^}]*\\b${compName}\\b`).test(code) && !code.includes(`export { ${compName} }`)) {
-            code += `\nexport { ${compName} };`;
-          }
-          combined[key].code = code;
-        }
-      }
-    });
-
-    // 8. Auto-fix missing component imports in JSX files (e.g. <Header /> without import Header)
-    Object.keys(combined).forEach((key) => {
-      if (key.endsWith(".tsx") || key.endsWith(".jsx") || key.endsWith(".js") || key.endsWith(".ts")) {
-        let code = combined[key].code;
-        const jsxTagMatches = [...code.matchAll(/<([A-Z][a-zA-Z0-9_]*)\b/g)];
-        const missingImports: string[] = [];
-
-        jsxTagMatches.forEach((m) => {
-          const compName = m[1];
-          const matchingCompPath = Object.keys(combined).find(
-            (k) => k.includes(`/src/components/${compName}.`) || k.includes(`src/components/${compName}.`)
-          );
-
-          if (matchingCompPath) {
-            const hasImport = new RegExp(`import\\s+${compName}\\b|import\\s+{[^}]*\\b${compName}\\b`).test(code);
-            if (!hasImport) {
-              const relPath = matchingCompPath.startsWith("/src/")
-                ? matchingCompPath.replace("/src/", "./")
-                : matchingCompPath.replace("src/", "./");
-              const cleanRelPath = relPath.replace(/\.(jsx|tsx|js|ts)$/, "");
-              missingImports.push(`import ${compName} from '${cleanRelPath}';`);
-            }
-          }
-        });
-
-        if (missingImports.length > 0) {
-          const uniqueImports = [...new Set(missingImports)].join("\n");
-          combined[key].code = `${uniqueImports}\n${code}`;
-        }
-      }
-    });
-
-    // 9. Check for components in src/components/
+    // Keep generated files faithful to their saved source. Sandpack compiler
+    // errors should be shown to the user instead of silently rewriting code.
+    // Check for components in src/components/
     const componentFiles = Object.keys(combined).filter(
       (k) => k.includes("/src/components/") && (k.endsWith(".jsx") || k.endsWith(".tsx"))
     );

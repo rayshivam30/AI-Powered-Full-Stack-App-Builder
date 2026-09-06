@@ -49,6 +49,8 @@ export function FileTabs({ openTabs, activeTab, onSelectTab, onCloseTab }: FileT
           <span className={cn("shrink-0 w-2 h-2 rounded-full", getFileIcon(path))} />
           <span className="truncate max-w-[120px]">{getFileName(path)}</span>
           <button
+            type="button"
+            aria-label={`Close ${getFileName(path)}`}
             onClick={(e) => {
               e.stopPropagation();
               onCloseTab(path);

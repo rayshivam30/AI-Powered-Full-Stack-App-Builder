@@ -8,7 +8,6 @@ import { LoginModal } from "./components/LoginModal";
 import { ProjectView } from "./pages/ProjectView";
 import { ProjectsDashboard } from "./pages/ProjectsDashboard";
 import Signup from "./pages/Signup";
-import { LiveView } from "./pages/LiveView";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,7 +24,6 @@ const App = () => (
           <Route path="/signup" element={<Signup />} />
           <Route path="/projects" element={<ProjectsDashboard />} />
           <Route path="/projects/:projectId" element={<ProjectView />} />
-          <Route path="/live/:projectId" element={<LiveView />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

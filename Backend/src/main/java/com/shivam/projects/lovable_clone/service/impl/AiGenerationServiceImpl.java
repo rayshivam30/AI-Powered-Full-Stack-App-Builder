@@ -13,7 +13,6 @@ import com.shivam.projects.lovable_clone.repository.*;
 import com.shivam.projects.lovable_clone.security.AuthUtil;
 import com.shivam.projects.lovable_clone.service.AiGenerationService;
 import com.shivam.projects.lovable_clone.service.ProjectFileService;
-import com.shivam.projects.lovable_clone.service.UsageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -46,15 +45,12 @@ public class AiGenerationServiceImpl implements AiGenerationService {
     private final UserRepository userRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final ChatEventRepository chatEventRepository;
-    private final UsageService usageService;
 
     private static final Pattern FILE_TAG_PATTERN = Pattern.compile("<file path=\"([^\"]+)\">(.*?)</file>", Pattern.DOTALL);
 
     @Override
     @PreAuthorize("@security.canEditProject(#projectId)")
     public Flux<StreamResponse> streamResponse(String userMessage, Long projectId) {
-
-//        usageService.checkDailyTokensUsage();
 
         Long userId = authUtil.getCurrentUserId();
         ChatSession chatSession = createChatSessionIfNotExists(projectId, userId);
@@ -115,11 +111,6 @@ public class AiGenerationServiceImpl implements AiGenerationService {
 
         Integer promptTokens = usage != null ? usage.getPromptTokens() : 0;
         Integer completionTokens = usage != null ? usage.getCompletionTokens() : 0;
-
-        if(usage != null) {
-            int totalTokens = usage.getTotalTokens();
-            usageService.recordTokenUsage(chatSession.getUser().getId(), totalTokens);
-        }
 
         // Save the User message
         chatMessageRepository.save(

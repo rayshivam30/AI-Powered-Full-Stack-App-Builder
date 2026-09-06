@@ -17,10 +17,8 @@ import { RuntimeErrorAlert, RuntimeError } from "@/components/RuntimeErrorAlert"
 import { generateGradient, cn } from "@/lib/utils";
 import { ProjectResponse } from "@/lib/types";
 import { ShareDialog } from "@/components/ShareDialog";
-import { UpgradeModal } from "@/components/UpgradeModal";
-import { PublishDialog } from "@/components/PublishDialog";
 
-type ViewMode = "code" | "preview";
+type ViewMode = "chat" | "code" | "preview";
 
 export function ProjectView() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -37,8 +35,6 @@ export function ProjectView() {
   const [lastGeneratedFiles, setLastGeneratedFiles] = useState<string[]>([]);
   const [project, setProject] = useState<ProjectResponse | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isPublished, setIsPublished] = useState(false);
-  const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState(false);
 
   // Rename state
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
@@ -46,6 +42,7 @@ export function ProjectView() {
 
   // Track edited files for current streaming response
   const currentEditedFilesRef = useRef<string[]>([]);
+  const streamCleanupRef = useRef<(() => void) | undefined>();
 
   // Check authentication
   useEffect(() => {
@@ -53,6 +50,10 @@ export function ProjectView() {
       navigate("/login");
     }
   }, [navigate]);
+
+  // Abort an in-flight response when leaving the workspace so it cannot update
+  // an unmounted project view.
+  useEffect(() => () => streamCleanupRef.current?.(), []);
 
   // Load chat history on mount
   useEffect(() => {
@@ -124,7 +125,7 @@ export function ProjectView() {
 
     setMessages((prev) => [...prev, aiMessage]);
 
-    const cleanup = api.streamChat(
+    streamCleanupRef.current = api.streamChat(
       projectId,
       content,
       (chunk) => {
@@ -140,7 +141,6 @@ export function ProjectView() {
       (path, fileContent) => {
         // Update file content
         setUpdatedFiles((prev) => new Map(prev).set(path, fileContent));
-        setHasUnpublishedChanges(true);
 
         // Track edited file
         if (!currentEditedFilesRef.current.includes(path)) {
@@ -166,6 +166,7 @@ export function ProjectView() {
           )
         );
         setIsStreaming(false);
+        streamCleanupRef.current = undefined;
         if (currentEditedFilesRef.current.length > 0) {
           setLastGeneratedFiles([...currentEditedFilesRef.current]);
           // Refresh file tree immediately and again after 1.5s & 3.5s for async backend DB saves
@@ -189,10 +190,9 @@ export function ProjectView() {
           )
         );
         setIsStreaming(false);
+        streamCleanupRef.current = undefined;
       }
     );
-
-    return cleanup;
   }, [projectId, toast]);
 
   // Listen for runtime errors from the preview iframe
@@ -363,8 +363,17 @@ Please analyze this error and fix the code to resolve it.`;
         <div className="flex items-center gap-1">
           
 
-          {/* View Mode Toggle */}
+          {/* Workspace mode selector */}
           <div className="flex items-center bg-muted/30 rounded-lg p-0.5 mx-2">
+            <button
+              onClick={() => setViewMode("chat")}
+              className={`md:hidden flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-all rounded-md ${viewMode === "chat"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+                }`}
+            >
+              Chat
+            </button>
             <button
               onClick={() => setViewMode("preview")}
               className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-all rounded-md ${viewMode === "preview"
@@ -439,56 +448,12 @@ Please analyze this error and fix the code to resolve it.`;
               </Button>
             }
           />
-          {project?.role !== 'VIEWER' && (
-            <>
-              {getUserInfo()?.plan === "PRO" ? (
-                <span className="h-8 px-2.5 rounded-md text-xs font-semibold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1.5 shadow-sm">
-                  <Sparkles className="w-3.5 h-3.5 fill-current text-amber-400" />
-                  PRO
-                </span>
-              ) : (
-                <UpgradeModal
-                  trigger={
-                    <Button variant="outline" size="sm" className="h-8 text-xs font-medium gap-1 text-amber-400 border-amber-500/30 hover:bg-amber-500/10">
-                      <Sparkles className="w-3 h-3 fill-current" />
-                      Upgrade
-                    </Button>
-                  }
-                />
-              )}
-              <PublishDialog
-                projectId={projectId || ""}
-                projectName={project?.name || "My App"}
-                hasUnpublishedChanges={hasUnpublishedChanges}
-                onPublishSuccess={() => {
-                  setIsPublished(true);
-                  setHasUnpublishedChanges(false);
-                }}
-                trigger={
-                  !isPublished ? (
-                    <Button size="sm" className="h-8 text-xs bg-primary hover:bg-primary/90 font-medium">
-                      Publish
-                    </Button>
-                  ) : hasUnpublishedChanges ? (
-                    <Button size="sm" className="h-8 text-xs bg-amber-600 hover:bg-amber-500 font-medium gap-1.5 shadow-sm text-white">
-                      <span className="w-2 h-2 rounded-full bg-amber-200 animate-pulse" />
-                      Update Live Site
-                    </Button>
-                  ) : (
-                    <Button size="sm" variant="outline" className="h-8 text-xs font-medium gap-1.5 border-emerald-500/50 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                      Published
-                    </Button>
-                  )
-                }
-              />
-            </>
-          )}
           <Button
             variant="ghost"
             size="icon"
             onClick={handleLogout}
             className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            aria-label="Sign out"
           >
             <LogOut className="w-4 h-4" />
           </Button>
@@ -497,7 +462,35 @@ Please analyze this error and fix the code to resolve it.`;
 
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
-        <ResizablePanelGroup direction="horizontal" className="h-full">
+        <div className="h-full md:hidden">
+          {viewMode === "chat" ? (
+            <ChatPanel
+              messages={messages}
+              onSendMessage={handleSendMessage}
+              isStreaming={isStreaming}
+              isLoading={isLoadingHistory}
+              readOnly={project?.role === 'VIEWER'}
+            />
+          ) : viewMode === "code" ? (
+            <CodePanel
+              projectId={projectId}
+              updatedFiles={updatedFiles}
+              refreshTrigger={fileRefreshTrigger}
+              newlyCreatedFiles={lastGeneratedFiles}
+            />
+          ) : (
+            <PreviewPanel
+              key={projectId}
+              projectId={projectId}
+              updatedFiles={updatedFiles}
+              refreshTrigger={fileRefreshTrigger}
+              runtimeError={runtimeError}
+              onDismiss={() => setRuntimeError(null)}
+              onFix={handleFixError}
+            />
+          )}
+        </div>
+        <ResizablePanelGroup direction="horizontal" className="hidden h-full md:flex">
           {/* Chat Panel */}
           <ResizablePanel defaultSize={35} minSize={25} maxSize={50}>
             <div className="h-full border-r border-border/50 bg-panel">

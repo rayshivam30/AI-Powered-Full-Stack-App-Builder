@@ -41,3 +41,4 @@ build/
 ehthumbs.db
 Thumbs.db
 
+*.tsbuildinfo

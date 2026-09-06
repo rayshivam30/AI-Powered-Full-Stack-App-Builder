@@ -31,25 +31,12 @@ spring:
 jwt:
   secret-key: ${JWT_SECRET_KEY}
 
-stripe:
-  api:
-    secret: ${STRIPE_API_SECRET:}
-  webhook:
-    secret: ${STRIPE_WEBHOOK_SECRET:}
-  price:
-    pro: ${STRIPE_PRO_PRICE_ID:price_pro}
-
 client:
   url: ${CLIENT_URL:http://localhost:5173}
 
 logging:
   level:
     org.springframework.ai.chat.client: DEBUG
-
-preview:
-  docker:
-    command: ${DOCKER_COMMAND:docker}
-    host: ${PREVIEW_HOST:localhost}
 
 minio:
   url: ${MINIO_URL:http://localhost:9000}

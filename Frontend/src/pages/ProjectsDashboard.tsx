@@ -354,7 +354,7 @@ export function ProjectsDashboard() {
                                     )}
                                 </CardContent>
                                 <CardFooter className="p-4 pt-0 text-xs text-muted-foreground">
-                                    Updated {new Date(project.createdAt).toLocaleDateString()}
+                                    Updated {new Date(project.updatedAt ?? project.createdAt).toLocaleDateString()}
                                 </CardFooter>
                             </Card>
                         ))}

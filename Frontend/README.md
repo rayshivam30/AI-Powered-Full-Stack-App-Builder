@@ -11,8 +11,6 @@ A modern, high-performance Web Application Builder frontend inspired by Lovable.
 - 🔧 **Auto-Fix & Compilation Error Watcher**: Detects runtime JSX/JS errors and provides a 1-click AI auto-fix action.
 - 📦 **One-Click Code Export**: Download full project source code as a formatted `.zip` archive.
 - 👥 **Project Sharing & Collaboration**: Invite members, assign roles (`OWNER`, `EDITOR`, `VIEWER`), and copy shareable links.
-- 💳 **Subscription & Pro Tier Upgrade**: Full pricing plan modals integrated with Stripe checkout session APIs.
-- 🚀 **Standalone Live Website Deployment**: Deploy and share live full-screen web applications (`/live/:projectId`).
 
 ---
 
